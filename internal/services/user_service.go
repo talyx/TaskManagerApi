@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/talyx/TaskManagerApi/internal/database"
 	"github.com/talyx/TaskManagerApi/internal/models"
-	"github.com/talyx/TaskManagerApi/pkg/logger"
+	"github.com/talyx/TaskManagerApi/internal/utils"
 )
 
 type UserService struct {
@@ -17,12 +17,13 @@ func NewUserService(repo *database.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) CreateUser(name string, email string) (*models.User, error) {
-	user := &models.User{
-		Names: name,
-		Email: email,
+func (s *UserService) CreateUser(user *models.User) (*models.User, error) {
+	var err error
+	user.PasswordHash, err = utils.HashPassword(user.PasswordHash)
+	if err != nil {
+		return nil, err
 	}
-	err := s.UserRepo.CreateUser(user)
+	err = s.UserRepo.CreateUser(user)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +44,6 @@ func (s *UserService) UpdateUser(id uint, name string, email string) (*models.Us
 		return nil, err
 	}
 	if user == nil {
-		logger.Debug("Request to update a non-existent user", map[string]interface{}{"id": id})
 		return nil, errors.New("user not found")
 	}
 	user.Names = name

@@ -55,3 +55,14 @@ func (r *UserRepository) GetAllUsers() ([]*models.User, error) {
 	}
 	return users, nil
 }
+
+func (r *UserRepository) GetUserByLogin(login string) (*models.User, error) {
+	var user models.User
+	if login == "" {
+		return nil, errors.New("login can not be empty")
+	}
+	if err := r.DB.Where("Names = ?", login).First(&user).Error; err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
