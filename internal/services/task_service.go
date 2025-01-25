@@ -31,9 +31,6 @@ func (t *TaskService) GetTaskById(id uint) (*models.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	if task == nil {
-		return nil, errors.New("task not found")
-	}
 	return task, nil
 }
 
@@ -41,13 +38,32 @@ func (t *TaskService) UpdateTask(task *models.Task) error {
 	if task.Title == "" {
 		return errors.New("task cannot be empty")
 	}
+	updateTask, err := t.GetTaskById(task.ID)
+	if err != nil {
+		return err
+	}
+	if updateTask == nil {
+		return errors.New("task not found")
+	}
+
 	return t.UpdateTask(task)
 }
 
 func (t *TaskService) DeleteTaskById(id uint) error {
+	task, err := t.GetTaskById(id)
+	if err != nil {
+		return err
+	}
+	if task == nil {
+		return errors.New("task not found")
+	}
 	return t.DeleteTaskById(id)
 }
 
-func (t *TaskService) GetAllTasks() ([]models.Task, error) {
+func (t *TaskService) GetAllTasks() ([]*models.Task, error) {
 	return t.TaskRepo.GetAllTasks()
+}
+
+func (t *TaskService) GetAllTasksByProjectId(projectId uint) ([]*models.Task, error) {
+	return t.TaskRepo.GetAllTasksByProjectId(projectId)
 }

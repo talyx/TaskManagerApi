@@ -48,9 +48,17 @@ func (r *TaskRepository) DeleteTaskById(id uint) error {
 	return nil
 }
 
-func (r *TaskRepository) GetAllTasks() ([]models.Task, error) {
-	var tasks []models.Task
+func (r *TaskRepository) GetAllTasks() ([]*models.Task, error) {
+	var tasks []*models.Task
 	if err := r.DB.Find(&tasks).Error; err != nil {
+		return nil, err
+	}
+	return tasks, nil
+}
+
+func (r *TaskRepository) GetAllTasksByProjectId(projectId uint) ([]*models.Task, error) {
+	var tasks []*models.Task
+	if err := r.DB.Where("ProjectID = ?", projectId).Find(&tasks).Error; err != nil {
 		return nil, err
 	}
 	return tasks, nil

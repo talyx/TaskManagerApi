@@ -48,9 +48,17 @@ func (r *ProjectRepository) DeleteProjectById(id uint) error {
 	return nil
 }
 
-func (r *ProjectRepository) GetAllProjects() ([]models.Project, error) {
-	var projects []models.Project
+func (r *ProjectRepository) GetAllProjects() ([]*models.Project, error) {
+	var projects []*models.Project
 	if err := r.DB.Find(&projects).Error; err != nil {
+		return nil, err
+	}
+	return projects, nil
+}
+
+func (r *ProjectRepository) GetAllProjectByUserId(id uint) ([]*models.Project, error) {
+	var projects []*models.Project
+	if err := r.DB.Where("UserID = ?", id).Find(&projects).Error; err != nil {
 		return nil, err
 	}
 	return projects, nil
