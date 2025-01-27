@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"github.com/talyx/TaskManagerApi/internal/models"
+	"github.com/talyx/TaskManagerApi/pkg/logger"
 	"gorm.io/gorm"
 )
 
@@ -58,8 +59,24 @@ func (r *ProjectRepository) GetAllProjects() ([]*models.Project, error) {
 
 func (r *ProjectRepository) GetAllProjectByUserId(id uint) ([]*models.Project, error) {
 	var projects []*models.Project
-	if err := r.DB.Where("UserID = ?", id).Find(&projects).Error; err != nil {
+	if err := r.DB.Where("user_id = ?", id).Find(&projects).Error; err != nil {
 		return nil, err
 	}
 	return projects, nil
+}
+
+func (r *ProjectRepository) IsUserAssignedToProject(userID, projectID uint) (bool, error) {
+	var count int64
+	logger.Info("isAssigned: before request", map[string]interface{}{
+		"user_id":    userID,
+		"project_id": projectID,
+	})
+	err := r.DB.
+		Table("projects").
+		Where("user_id = ? AND ID = ?", userID, projectID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

@@ -61,7 +61,7 @@ func (r *UserRepository) GetUserByLogin(login string) (*models.User, error) {
 	if login == "" {
 		return nil, errors.New("login can not be empty")
 	}
-	if err := r.DB.Where("Names = ?", login).First(&user).Error; err != nil {
+	if err := r.DB.Where("email = ?", login).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
