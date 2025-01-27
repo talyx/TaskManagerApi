@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"github.com/talyx/TaskManagerApi/internal/services"
 	"github.com/talyx/TaskManagerApi/pkg/logger"
 	"net/http"
@@ -21,19 +20,13 @@ func NewAuthHandler(authService *services.AuthService) *AuthHandler {
 }
 
 func (handler *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		logger.Error("Invalid login request", map[string]interface{}{"error": err.Error()})
-		http.Error(w, "Invalid request", http.StatusBadRequest)
-		return
-	}
 	err := handler.AuthService.Login(w, r)
 	if err != nil {
-		logger.Error("Authentication error", map[string]interface{}{"error": err.Error()})
-		http.Error(w, "Authentication error", http.StatusUnauthorized)
+		logger.Error("Authorization error", map[string]interface{}{"error": err.Error()})
+		http.Error(w, "Authorization error", http.StatusUnauthorized)
 		return
 	}
-	logger.Info("Authentication success", map[string]interface{}{"user": req.Login})
+	logger.Info("Authentication success", nil)
 }
 
 func (handler *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {

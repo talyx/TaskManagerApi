@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
+	"github.com/gorilla/sessions"
 	"github.com/talyx/TaskManagerApi/internal/models"
 	"github.com/talyx/TaskManagerApi/internal/services"
 	"github.com/talyx/TaskManagerApi/pkg/logger"
@@ -11,11 +12,13 @@ import (
 )
 
 type TaskHandler struct {
-	TaskService *services.TaskService
+	TaskService  *services.TaskService
+	SessionStore *sessions.FilesystemStore
 }
 
-func NewTaskHandler(taskService *services.TaskService) *TaskHandler {
-	return &TaskHandler{TaskService: taskService}
+func NewTaskHandler(taskService *services.TaskService, sessionStore *sessions.FilesystemStore) *TaskHandler {
+	return &TaskHandler{TaskService: taskService,
+		SessionStore: sessionStore}
 }
 
 func (th *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
@@ -27,11 +30,21 @@ func (th *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input, request body error", http.StatusBadRequest)
 		return
 	}
-	if err := th.TaskService.CreateTask(&task); err != nil {
+	session, err := th.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	userID := session.Values["UserID"].(uint)
+	logger.Debug("create task", map[string]interface{}{
+		"task": task,
+	})
+	if err := th.TaskService.CreateTask(&task, userID); err != nil {
 		logger.Error("cannot create task, server error", map[string]interface{}{
 			"error": err,
 		})
-		http.Error(w, "server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	logger.Info("create task", map[string]interface{}{
@@ -50,8 +63,14 @@ func (th *TaskHandler) GetTaskById(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid input, request id error", http.StatusBadRequest)
 		return
 	}
-	task, err := th.TaskService.GetTaskById(uint(id))
-
+	session, err := th.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	userID := session.Values["UserID"].(uint)
+	task, err := th.TaskService.GetTaskById(userID, uint(id))
 	if err != nil {
 		logger.Error("cannot get task, server error", map[string]interface{}{
 			"error": err,
@@ -80,11 +99,18 @@ func (th *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid input, request body error", http.StatusBadRequest)
 		return
 	}
-	if err := th.TaskService.UpdateTask(&task); err != nil {
+	session, err := th.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	userID := session.Values["UserID"].(uint)
+	if err := th.TaskService.UpdateTask(&task, userID); err != nil {
 		logger.Error("cannot update task, server error", map[string]interface{}{
 			"error": err,
 		})
-		http.Error(w, "server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	logger.Info("task update successfully", map[string]interface{}{
@@ -102,12 +128,20 @@ func (th *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "bad request", http.StatusBadRequest)
 		return
 	}
-	err = th.TaskService.DeleteTaskById(uint(id))
+	session, err := th.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	userID := session.Values["UserID"].(uint)
+
+	err = th.TaskService.DeleteTaskById(userID, uint(id))
 	if err != nil {
 		logger.Error("delete task error", map[string]interface{}{
 			"error": err,
 		})
-		http.Error(w, "server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	logger.Info("delete task successfully", map[string]interface{}{
@@ -122,7 +156,7 @@ func (th *TaskHandler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 		logger.Error("cannot get all tasks", map[string]interface{}{
 			"error": err,
 		})
-		http.Error(w, "server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	logger.Info("get all tasks successfully", map[string]interface{}{
@@ -133,7 +167,7 @@ func (th *TaskHandler) GetAllTasks(w http.ResponseWriter, r *http.Request) {
 }
 
 func (th *TaskHandler) GetAllTasksByProjectId(w http.ResponseWriter, r *http.Request) {
-	projectId, err := strconv.Atoi(mux.Vars(r)["project_id"])
+	projectId, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
 		logger.Error("invalid input, request id error", map[string]interface{}{
 			"error": err,
@@ -141,10 +175,17 @@ func (th *TaskHandler) GetAllTasksByProjectId(w http.ResponseWriter, r *http.Req
 		http.Error(w, "invalid input, request id error", http.StatusBadRequest)
 		return
 	}
-	projects, err := th.TaskService.GetAllTasksByProjectId(uint(projectId))
+	session, err := th.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+	userID := session.Values["UserID"].(uint)
+	projects, err := th.TaskService.GetAllTasksByProjectId(userID, uint(projectId))
 	if err != nil {
 		logger.Error("get all task by project id error, server error", map[string]interface{}{"id": projectId})
-		http.Error(w, "server error", http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	logger.Info("success get all tasks by project id", nil)
