@@ -83,8 +83,8 @@ func initRouts() (*mux.Router, error) {
 	//		User routs
 	protected.HandleFunc("/logout", authHandler.Logout).Methods("POST")
 	protected.HandleFunc("/user/{id:[0-9]+}", userHandler.GetUserById).Methods("GET")
-	protected.HandleFunc("/users/{id:[0-9]+}", userHandler.UpdateUser).Methods("PUT")
-	protected.HandleFunc("/users/{id:[0-9]+}", userHandler.DeleteUser).Methods("DELETE")
+	protected.HandleFunc("/user/{id:[0-9]+}", userHandler.UpdateUser).Methods("PUT")
+	protected.HandleFunc("/user/{id:[0-9]+}", userHandler.DeleteUser).Methods("DELETE")
 	protected.HandleFunc("/users", userHandler.GetAllUsers).Methods("GET")
 
 	//		Project routs
