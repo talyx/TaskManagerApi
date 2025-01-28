@@ -56,97 +56,56 @@ TaskManagerAPI is a backend application built using Go (Golang) to manage users,
 
 ## API Endpoints
 
+Below are the available API endpoints for managing Users, Projects, and Tasks.
+
+---
+
 ### User Endpoints
 
-#### Create a User
-**POST** `/register`
-```json
-{
-  "names": "John Doe",
-  "email": "john.doe@example.com",
-  "passwordhash": "securepassword"
-}
-```
+| Method | Endpoint          | Description                          | Request Body                                                                 |
+|--------|-------------------|--------------------------------------|------------------------------------------------------------------------------|
+| POST   | `/register`       | Create a new user                    | ```{  "names": "John Doe",  "email": "john.doe@example.com",  "passwordhash": "securepassword"}``` |
+| GET    | `/users`          | Retrieve all users                   |                                                                              |
+| GET    | `/user/{id}`      | Retrieve a user by ID                |                                                                              |
+| PUT    | `/user/{id}`      | Update a user by ID                  | ```{  "names": "Jane Doe",  "email": "jane.doe@example.com",  "passwordhash": "newpassword"}``` |
+| DELETE | `/user/{id}`      | Delete a user by ID                  |                                                                              |
 
-#### Get All Users
-**GET** `/users`
+**Note**: When creating a user, the `passwordhash` field should contain a securely hashed password.
 
-#### Get User by ID
-**GET** `/user/{id}`
-
-#### Update User
-**PUT** `/user/{id}`
-```json
-{
-  "names": "Jane Doe",
-  "email": "jane.doe@example.com",
-  "passwordhash": "newpassword"
-}
-```
-
-#### Delete User
-**DELETE** `/user/{id}`
+---
 
 ### Project Endpoints
 
-#### Create a Project
-**POST** `/project`
-```json
-{
-  "name": "Project Alpha",
-  "description": "This is the first project."
-}
-```
-userID  is taken automatically from a cookie or token when creating a project
+| Method | Endpoint          | Description                          | Request Body                                                                 |
+|--------|-------------------|--------------------------------------|------------------------------------------------------------------------------|
+| POST   | `/project`        | Create a new project                 | ```{  "name": "Project Alpha",  "description": "This is the first project."}```|
+| GET    | `/projects`       | Retrieve all projects                |                                                                              |
+| GET    | `/project/{id}`   | Retrieve a project by ID             |                                                                              |
+| PUT    | `/project/{id}`   | Update a project by ID               | ```{  "name": "Project Beta",  "description": "Updated project description."}``` |
+| DELETE | `/project/{id}`   | Delete a project by ID               |                                                                              |
 
-#### Get All Projects
-**GET** `/projects`
+**Note**: The `UserID` is automatically associated with the authenticated user when creating a project.
 
-#### Get Project by ID
-**GET** `/project/{id}`
-
-#### Update Project
-**PUT** `/project/{id}`
-```json
-{
-  "name": "Project Beta",
-  "description": "Updated project description."
-}
-```
-
-#### Delete Project
-**DELETE** `/project/{id}`
+---
 
 ### Task Endpoints
 
-#### Create a Task
-**POST** `/task`
-```json
-{
-  "title": "Task One",
-  "description": "This is the first task.",
-  "ProjectID": 1
-}
-```
+| Method | Endpoint          | Description                          | Request Body                                                                 |
+|--------|-------------------|--------------------------------------|------------------------------------------------------------------------------|
+| POST   | `/task`           | Create a new task                    | ```{  "title": "Task One",  "description": "This is the first task.",  "ProjectID": 1}``` |
+| GET    | `/tasks`          | Retrieve all tasks                   |                                                                              |
+| GET    | `/task/{id}`      | Retrieve a task by ID                |                                                                              |
+| PUT    | `/task/{id}`      | Update a task by ID                  | ```{  "name": "Task Two",  "description": "Updated task description."}``` |
+| DELETE | `/task/{id}`      | Delete a task by ID                  |                                                                              |
 
-#### Get All Tasks
-**GET** `/tasks`
+**Note**: The `ProjectID` field is used to associate the task with a specific project.
 
-#### Get Task by ID
-**GET** `/task/{id}`
+---
 
-#### Update Task
-**PUT** `/task/{id}`
-```json
-{
-  "name": "Task Two",
-  "description": "Updated task description."
-}
-```
+### Authentication
 
-#### Delete Task
-**DELETE** `/task/{id}`
-
+- **Authentication**: Most endpoints require authentication. Use the `/login` endpoint to obtain a session or token.
+- **Authorization**: Ensure that the authenticated user has the necessary permissions to perform actions on resources.
 ## Example curl Requests
 
 ### Create a User
