@@ -175,11 +175,11 @@ curl -X GET http://localhost:8005/users -b cookies.txt
 
 ### Create a Project
 ```bash
-curl -X POST http://localhost:8080/projects \
+curl -X POST http://localhost:8005/project \
 -H "Content-Type: application/json" \
 -d '{
   "name": "Project Alpha",
-  "description": "This is the first project.",
+  "description": "This is the first project."
 }' \
 -b cookies.txt
 
@@ -187,12 +187,12 @@ curl -X POST http://localhost:8080/projects \
 
 ### Get All Projects
 ```bash
-curl -X GET http://localhost:8080/projects -b cookies.txt
+curl -X GET http://localhost:8005/projects -b cookies.txt
 ```
 
 ### Create a Task
 ```bash
-curl -X POST http://localhost:8080/tasks \
+curl -X POST http://localhost:8005/task \
 -H "Content-Type: application/json" \
 -d '{
   "title": "Task One",
@@ -204,7 +204,7 @@ curl -X POST http://localhost:8080/tasks \
 
 ### Get All Tasks by project
 ```bash
-curl -X GET http://localhost:8080/tasks/1 -b cookies.txt
+curl -X GET http://localhost:8005/tasks/1 -b cookies.txt
 ```
 
 
