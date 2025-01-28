@@ -65,8 +65,8 @@ func initRouts() (*mux.Router, error) {
 	//		Handlers
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userService)
-	projectHandler := handlers.NewProjectHandler(projectService, sessionStore)
-	taskHandler := handlers.NewTaskHandler(taskService, sessionStore)
+	projectHandler := handlers.NewProjectHandler(projectService, authService)
+	taskHandler := handlers.NewTaskHandler(taskService, authService)
 
 	// 		router
 	router := mux.NewRouter()

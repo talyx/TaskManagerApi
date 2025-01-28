@@ -74,6 +74,16 @@ func (s *SessionAuth) Authenticate(w http.ResponseWriter, r *http.Request) error
 	return nil
 }
 
+func (s *SessionAuth) GetUserID(w http.ResponseWriter, r *http.Request) (uint, error) {
+	session, err := s.SessionStore.Get(r, "session")
+	if err != nil {
+		logger.Error("get session error", map[string]interface{}{"error": err})
+		return 0, err
+	}
+	userID := session.Values["UserID"].(uint)
+	return userID, nil
+}
+
 func NewSessionAuth(store *sessions.FilesystemStore, repo *database.UserRepository) *SessionAuth {
 	return &SessionAuth{
 		SessionStore: store,

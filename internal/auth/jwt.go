@@ -51,8 +51,8 @@ func (j *JWTAuth) Logout(w http.ResponseWriter, r *http.Request) error {
 
 func (j *JWTAuth) GenerateJWT(userID uint) (string, error) {
 	claims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     time.Now().Add(time.Hour * 24).Unix(),
+		"userID": userID,
+		"exp":    time.Now().Add(time.Hour * 24).Unix(),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(j.secretString))
@@ -91,6 +91,41 @@ func (j *JWTAuth) Authenticate(w http.ResponseWriter, r *http.Request) error {
 		return errors.New("invalid token")
 	}
 	return nil
+}
+
+func (j *JWTAuth) GetUserID(w http.ResponseWriter, r *http.Request) (uint, error) {
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+
+		tokenString := strings.TrimPrefix(authHeader, "Bearer")
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				logger.Error("unexpected signing method", map[string]interface{}{
+					"token": tokenString,
+					"error": ok,
+				})
+				return nil, errors.New("unexpected signing method")
+			}
+			return []byte(j.secretString), nil
+		})
+		if err != nil {
+			logger.Error("failed to parse token", map[string]interface{}{
+				"token": tokenString,
+				"error": err,
+			})
+			return 0, err
+		}
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok || !token.Valid {
+			return 0, errors.New("invalid token")
+		}
+		userID, ok := claims["userID"].(float64)
+		if !ok {
+			return 0, errors.New("invalid token")
+		}
+		return uint(userID), nil
+	}
+	return 0, errors.New("invalid token")
 }
 
 func NewJwtAuth(s string, repo *database.UserRepository) *JWTAuth {

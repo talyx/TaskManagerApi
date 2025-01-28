@@ -14,25 +14,18 @@ func NewAuthService(authenticator auth.Authenticator) *AuthService {
 }
 
 func (as *AuthService) Login(w http.ResponseWriter, r *http.Request) error {
-	err := as.Authenticator.Authorize(w, r)
-	if err != nil {
-		return err
-	}
-	return nil
+	return as.Authenticator.Authorize(w, r)
 }
 
 func (as *AuthService) Logout(w http.ResponseWriter, r *http.Request) error {
-	err := as.Authenticator.Logout(w, r)
-	if err != nil {
-		return err
-	}
-	return nil
+	return as.Authenticator.Logout(w, r)
 }
 
 func (as *AuthService) Athenticate(w http.ResponseWriter, r *http.Request) error {
-	err := as.Authenticator.Authenticate(w, r)
-	if err != nil {
-		return err
-	}
-	return nil
+	return as.Authenticator.Authenticate(w, r)
+
+}
+
+func (as *AuthService) GetUserID(w http.ResponseWriter, r *http.Request) (uint, error) {
+	return as.Authenticator.GetUserID(w, r)
 }

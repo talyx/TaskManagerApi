@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/sessions"
 	"github.com/talyx/TaskManagerApi/internal/models"
 	"github.com/talyx/TaskManagerApi/internal/services"
 	"github.com/talyx/TaskManagerApi/pkg/logger"
@@ -13,13 +12,13 @@ import (
 
 type ProjectHandler struct {
 	ProjectService *services.ProjectService
-	SessionStore   *sessions.FilesystemStore
+	AuthService    *services.AuthService
 }
 
-func NewProjectHandler(projecService *services.ProjectService, sessionStore *sessions.FilesystemStore) *ProjectHandler {
+func NewProjectHandler(projecService *services.ProjectService, authService *services.AuthService) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectService: projecService,
-		SessionStore:   sessionStore,
+		AuthService:    authService,
 	}
 }
 
@@ -31,13 +30,12 @@ func (handler *ProjectHandler) CreateProject(w http.ResponseWriter, r *http.Requ
 		return
 	}
 	logger.Info("create project", map[string]interface{}{"project": project})
-	session, err := handler.SessionStore.Get(r, "session")
+	userID, err := handler.AuthService.GetUserID(w, r)
 	if err != nil {
 		logger.Error("get session error", map[string]interface{}{"error": err})
 		http.Error(w, "BadRequest", http.StatusBadRequest)
 		return
 	}
-	userID := session.Values["UserID"].(uint)
 	if err := handler.ProjectService.CreateProject(&project, userID); err != nil {
 		logger.Info("create project, server error", map[string]interface{}{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -56,15 +54,13 @@ func (handler *ProjectHandler) GetProjectById(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	session, err := handler.SessionStore.Get(r, "session")
+	userID, err := handler.AuthService.GetUserID(w, r)
 	if err != nil {
 		logger.Error("get session error", map[string]interface{}{"error": err})
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	userID := session.Values["UserID"].(uint)
 	project, err := handler.ProjectService.GetProjectById(userID, uint(id))
-
 	if err != nil {
 		logger.Info("get project by id, server error", map[string]interface{}{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -82,13 +78,12 @@ func (handler *ProjectHandler) UpdateProject(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	session, err := handler.SessionStore.Get(r, "session")
+	userID, err := handler.AuthService.GetUserID(w, r)
 	if err != nil {
 		logger.Error("get session error", map[string]interface{}{"error": err})
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	userID := session.Values["UserID"].(uint)
 	if err := handler.ProjectService.UpdateProject(&project, userID); err != nil {
 		logger.Info("update project, server error", map[string]interface{}{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -105,13 +100,12 @@ func (handler *ProjectHandler) DeleteProject(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	session, err := handler.SessionStore.Get(r, "session")
+	userID, err := handler.AuthService.GetUserID(w, r)
 	if err != nil {
 		logger.Error("get session error", map[string]interface{}{"error": err})
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	userID := session.Values["UserID"].(uint)
 	if err := handler.ProjectService.DeleteProjectById(userID, uint(id)); err != nil {
 		logger.Info("delete project, server error", map[string]interface{}{"error": err})
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -134,13 +128,12 @@ func (handler *ProjectHandler) GetAllProjects(w http.ResponseWriter, r *http.Req
 }
 
 func (handler *ProjectHandler) GetAllProjectByUserId(w http.ResponseWriter, r *http.Request) {
-	session, err := handler.SessionStore.Get(r, "session")
+	userID, err := handler.AuthService.GetUserID(w, r)
 	if err != nil {
 		logger.Error("get session error", map[string]interface{}{"error": err})
 		http.Error(w, "Bad request", http.StatusBadRequest)
 		return
 	}
-	userID := session.Values["UserID"].(uint)
 	projects, err := handler.ProjectService.GetAllProjectByUserId(userID)
 	if err != nil {
 		logger.Info("get all project by user, server error", map[string]interface{}{"error": err})
