@@ -151,7 +151,7 @@ userID  is taken automatically from a cookie or token when creating a project
 
 ### Create a User
 ```bash
-curl -X POST http://localhost:8005/users \
+curl -X POST http://localhost:8005/register \
 -H "Content-Type: application/json" \
 -d '{
   "names": "John Doe",
@@ -165,7 +165,7 @@ curl -X POST http://localhost:8005/users \
 curl -v -X POST http://localhost:8005/login \
 -H  "Content-type: application/json" \
 -d '{"login":"john.doe@example.com", "password":"securepassword"}' \
--b cookies.txt
+-c cookies.txt
 ```
 
 ### Get All Users
