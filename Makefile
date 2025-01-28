@@ -1,14 +1,14 @@
 .PHONY: up down logs psql reset-db status run run-debug run-production
+include .env
+export $(shell sed 's/=.*//' .env)
 
 up:
 	sudo docker-compose up -d
 down:
 	sudo docker-compose down
-logs:
-	sudo docker-compose logs -f db
 
 psql:
-	sudo docker exec -it poject_db psql -U postgres
+	sudo docker exec -it $(CONTAINER_NAME) psql -U postgres
 
 reset-db:
 	sudo docker-compose down -v
@@ -16,9 +16,6 @@ reset-db:
 
 status:
 	sudo docker ps
-
-run:
-	go run cmd/server/main.go
 
 run-debug:
 	go run ./cmd/server/main.go --log-level=debug
